@@ -1,0 +1,53 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+[ -e "/dev/mmcblk0p3" ] && exit 0
+
+case "$(board_name)" in
+hf,m7986r1*)
+fdisk "/dev/mmcblk0" <<-EOF
+n
+p
+1
+
++1G
+w
+EOF
+
+umount "/mnt/mmcblk0p1"
+mkfs.ext4 -F -q -L log "/dev/mmcblk0p1"
+
+mkdir -p "/log"
+mount_cfg="$(uci add fstab mount)"
+uci set "fstab.$mount_cfg.enabled"="1"
+uci set "fstab.$mount_cfg.target"="/log"
+uci set "fstab.$mount_cfg.device"="/dev/mmcblk0p1"
+uci commit fstab
+
+mount -o rw,noatime,discard "/dev/mmcblk0p1" "/log"
+
+fdisk "/dev/mmcblk0" <<-EOF
+n
+p
+2
+
+
+w
+EOF
+
+umount "/mnt/mmcblk0p2"
+mkfs.ext4 -F -q -L opt "/dev/mmcblk0p2"
+
+mkdir -p "/opt"
+mount_cfg="$(uci add fstab mount)"
+uci set "fstab.$mount_cfg.enabled"="1"
+uci set "fstab.$mount_cfg.target"="/opt"
+uci set "fstab.$mount_cfg.device"="/dev/mmcblk0p2"
+uci commit fstab
+
+mount -o rw,noatime,discard "/dev/mmcblk0p2" "/opt"
+;;
+esac
+
+exit 0
