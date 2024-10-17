@@ -1,4 +1,5 @@
 
+. /lib/functions/leds.sh
 . /lib/functions/uci-defaults.sh
 
 board_config_update
@@ -15,6 +16,9 @@ redmi,ax5-*|\
 xiaomi,rm1800)
 	ucidef_set_led_netdev "internet" "Internet" "blue:network" "wan"
 	;;
+    JDCloud,AX1800 Pro)
+        ucidef_set_led_netdev "wan" "WAN" "net_blue" "eth3"
+        ;;
 esac
 
 board_config_flush
